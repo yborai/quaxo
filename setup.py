@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 
 """
-stub
+quaxo
 """
 
 import os
 
-import stub
+import quaxo
 
 
 def relative_path(path):
@@ -23,7 +23,7 @@ def autosetup():
         requirements_txt = f.read().split("\n")
 
     return setup(
-        name="stub",
+        name="quaxo",
         version="0.0.1",
         include_package_data=True,
         zip_safe=False,
@@ -31,7 +31,7 @@ def autosetup():
         install_requires=requirements_txt,
         entry_points = {
             'console_scripts': [
-                'stub = stub.__main__:main',
+                'quaxo = quaxo.__main__:main',
             ]
         }
     )

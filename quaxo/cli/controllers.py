@@ -6,7 +6,7 @@ from cement.core.controller import CementBaseController, expose
 class CLI(CementBaseController):
     class Meta:
         label = "base"
-        description = "A stub CLI"
+        description = "Quaxo CLI"
         arguments = CementBaseController.Meta.arguments
 
     @expose(hide=True)

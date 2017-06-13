@@ -1,6 +1,6 @@
 import os
 
-CONFIG_PATH = os.path.expanduser("~/.stub/config")
+CONFIG_PATH = os.path.expanduser("~/.quaxo/config")
 CRED_ITEMS = [
     (
         "aws", [
@@ -11,5 +11,5 @@ CRED_ITEMS = [
     ),
 ]
 DEFAULTS = {
-    "STUB_PREFIX": os.path.expanduser("~/.stub/"),
+    "STUB_PREFIX": os.path.expanduser("~/.quaxo/"),
 }

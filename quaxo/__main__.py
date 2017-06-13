@@ -1,5 +1,5 @@
 """
-A stub cement project
+A quaxo cement project
 """
 import os
 import sys
@@ -20,13 +20,13 @@ class StubException(Exception):
 
 class Stub(CementApp):
     class Meta:
-        label = "stub"
+        label = "quaxo"
         base_controller = "base"
         config_defaults = defaults
         config_files = [CONFIG_PATH]
         handlers = StubControllers
         extensions = [
-            "stub.output",
+            "quaxo.output",
             "colorlog",
         ]
         output_handler = "default" # See .output
