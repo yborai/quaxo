@@ -1,6 +1,7 @@
 import sys
 
 from cement.core.controller import CementBaseController, expose
+from .scanners.list_no_mfa import list_no_mfa
 from .scanners.private_subnets import private_subnets
 
 
@@ -19,5 +20,14 @@ class CLI(CementBaseController):
     def private_subnets(self):
         priv_subs = private_subnets()
         self.app.render(priv_subs)
+
+    @expose(help=(
+        "Lists all users with admin level permissions that do not "
+        "have multifactor authentication"
+    ))
+    def list_no_mfa(self):
+        response = list_no_mfa()
+
+        self.app.render(response)
 
 __ALL__ = [CLI]
