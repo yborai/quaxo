@@ -2,7 +2,7 @@ import sys
 
 from cement.core.controller import CementBaseController, expose
 from .scanners.list_no_mfa import list_no_mfa
-from .scanners.private_subnets import private_subnets
+from .scanners.private_subnets import PrivateSubnets
 
 
 class CLI(CementBaseController):
@@ -16,18 +16,42 @@ class CLI(CementBaseController):
         self.app.args.print_help()
         sys.exit(0)
 
-    @expose(help="List all private subnets associated with elbs")
-    def private_subnets(self):
-        priv_subs = private_subnets()
-        self.app.render(priv_subs)
+class PrivateSubnetsController(CLI):
+    class Meta:
+        label = "private-subnets"
+        stacked_on = "base"
+        stacked_type = "nested"
+        description = "Returns the private associated attached to ELBs"
 
-    @expose(help=(
-        "Lists all users with admin level permissions that do not "
-        "have multifactor authentication"
-    ))
-    def list_no_mfa(self):
-        response = list_no_mfa()
+        arguments = CLI.Meta.arguments + [(
+            ["--region"], dict(
+                type=str,
+                help="The AWS region on which to run the scanner."
 
-        self.app.render(response)
+            )
+        ), 
+        (
+            ["--account"], dict(
+                type=str,
+                help="The AWS account on which to run the scanner."
 
-__ALL__ = [CLI]
+            )
+        )]
+    @expose(hide=True)
+    def default(self):
+        self.run(**vars(self.app.pargs))
+
+    def run(self, **kwargs):
+        region = self.app.pargs.region
+        account = self.app.pargs.account
+        self.app.log.info(
+            "scanning your ELBs on {account} in {region}"
+            .format(account=account, region=region)
+        )
+        client = PrivateSubnets(region=region, account=account)
+        subs = client.private_subnets()
+        self.app.render(subs)
+        return subs
+
+
+__ALL__ = [CLI, PrivateSubnetsController]
