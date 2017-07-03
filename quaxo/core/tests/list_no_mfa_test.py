@@ -1,4 +1,5 @@
 from cement.utils import test
+from moto import mock_iam
 import boto3
 
 from ...cli.scanners.list_no_mfa import generate_report, get_users

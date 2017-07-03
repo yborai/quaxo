@@ -1,8 +1,12 @@
 import sys
+import datetime
 
+import boto3
+import pytz
 from cement.core.controller import CementBaseController, expose
 from .scanners.list_no_mfa import list_no_mfa
 from .scanners.private_subnets import PrivateSubnets
+from .scanners.snap_methods import get_snaps, get_stale_date
 
 
 class CLI(CementBaseController):
@@ -37,6 +41,7 @@ class PrivateSubnetsController(CLI):
 
             )
         )]
+
     @expose(hide=True)
     def default(self):
         self.run(**vars(self.app.pargs))
@@ -53,5 +58,53 @@ class PrivateSubnetsController(CLI):
         self.app.render(subs)
         return subs
 
+class AgedSnapshots(CLI):
+    class Meta:
+        label = "stale-snaps"
+        description = "Returns all snapshots older than a specified #days(default: 30)"
+        stacked_on = "base"
+        stacked_type = "nested"
+        arguments = CLI.Meta.arguments + [(
+            ["--days"], dict(
+                type=int,
+                action="store",
+                help="The number of days after which a snapshot is considered expired"
+            )
+        )]
 
-__ALL__ = [CLI, PrivateSubnetsController]
+    @expose(hide=True)
+    def default(self):
+        self.run(**vars(self.app.pargs))
+
+    def run(self, **kwargs):
+        self.app.log.info("Retrieving snapshots from AWS store")
+        days = self.app.pargs.days
+
+        final_snapshots = get_snaps(days)
+
+        self.app.render(final_snapshots)
+
+class MFAStatus(CLI):
+    class Meta:
+        label = "list-no-mfa"
+        description = "Returns all users with admin permissions who do not have MFA active"
+        stacked_on = "base"
+        stacked_type = "nested"
+
+    @expose(hide=True)
+    def default(self):
+        self.run(**vars(self.app.pargs))
+
+    def run(self, **kwargs):
+        self.app.log.info("Retrieving credentials from AWS store")
+
+        admin_users = list_no_mfa()
+
+        self.app.render(admin_users)
+
+__ALL__ = [
+    CLI,
+    AgedSnapshots,
+    MFAStatus,
+    PrivateSubnetsController,
+]
