@@ -30,11 +30,12 @@ class PrivateSubnets(object):
         rt_response = self.ec2.describe_route_tables()
         for table in rt_response['RouteTables']:
             for route in table['Routes']:
-                if route.get('DestinationCidrBlock') == "0.0.0.0/0":
-                    if route.get('GatewayId') in igw:
-                        for assocation in table['Associations']:
-                            if assocation.get('SubnetId') != None:
-                                public_subs.append(assocation.get('SubnetId'))
+                route_cidr_block = route.get('DestinationCidrBlock') == "0.0.0.0/0"
+                gatewayid = route.get('GatewayId') in igw
+                if route_cidr_block and gatewayid:
+                    for assocation in table['Associations']:
+                        if assocation.get('SubnetId') != None:
+                            public_subs.append(assocation.get('SubnetId'))
         return self.double_check(public_subs, igw, subnets)
 
     def double_check(self, public_subs, igw, subnets):
@@ -52,23 +53,23 @@ class PrivateSubnets(object):
             vpcs_need_to_check.append(subnet['VpcId'])
 
         zipped = list(zip(double_check_subnets, vpcs_need_to_check))
-        vpc_2 = []
+        public_vpcs = []
 
         rt_response_2 = self.ec2.describe_route_tables(
             Filters=[{'Name' : 'vpc-id', 'Values' : vpcs_need_to_check}]
         )
         for table in rt_response_2['RouteTables']:
             for route in table['Routes']:
-                if route.get('DestinationCidrBlock') == "0.0.0.0/0":
-                    if route.get('GatewayId') in igw:
-                        for assocation in table['Associations']:
-                            if assocation.get('SubnetId') == None:
-                                vpc_2.append(table.get('VpcId'))
-        return self.combine(vpc_2, public_subs, zipped)
+                route_cidr_block = route.get('DestinationCidrBlock') == "0.0.0.0/0"
+                gatewayid = route.get('GatewayId') in igw
+                if route_cidr_block and gatewayid:
+                    for assocation in table['Associations']:
+                        if assocation.get('SubnetId') == None:
+                            public_vpcs.append(table.get('VpcId'))
+        return self.combine(public_vpcs, public_subs, zipped)
 
-    def combine(self, vpc_2, public_subs, zipped):
-
-        select_subnets = [item[0] for item in zipped if item[1] in vpc_2]
+    def combine(self, public_vpcs, public_subs, zipped):
+        select_subnets = [item[0] for item in zipped if item[1] in public_vpcs]
         
         all_pubsubs = select_subnets + public_subs
 
@@ -92,13 +93,14 @@ class PrivateSubnets(object):
                 if tag.get('Key') == 'Name':
                     name = tag.get('Value')
 
-            elb_dict = dict()
-            elb_dict['account'] = self.account
-            elb_dict['region'] = self.region
-            elb_dict['load_blanacer_name'] = elb_.get('LoadBalancerName')
-            elb_dict['load_balancer_name_tag'] = name or 'no_name'
-            elb_dict['environment'] = lw_environment or 'no_env'
-            elb_dict['invalid_subnets'] = associated_priv_sub
+            elb_dict = dict(
+                accout=self.account,
+                region=self.region,
+                load_blanacer_name=(elb_.get('LoadBalancerName')),
+                load_balancer_name_tag=(name or 'no_name'),
+                environment=(lw_environment or 'no_env'),
+                invalid_subnets=associated_priv_sub,
+                )
             response.append(elb_dict)
             associated_priv_sub = []
 
