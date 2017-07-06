@@ -5,8 +5,9 @@ import boto3
 import pytz
 from cement.core.controller import CementBaseController, expose
 from .scanners.list_no_mfa import list_no_mfa
+from .scanners.iam_check import list_wo_policy
 from .scanners.private_subnets import PrivateSubnets
-from .scanners.snap_methods import get_snaps, get_stale_date
+from .scanners.snap_methods import get_snaps
 
 
 class CLI(CementBaseController):
@@ -102,9 +103,36 @@ class MFAStatus(CLI):
 
         self.app.render(admin_users)
 
+class IamCheck(CLI):
+    class Meta:
+        label = "iam-check"
+        description = "Returns all users without specified Iam policies"
+        stacked_on = "base"
+        stacked_type = "nested"
+        arguments = CLI.Meta.arguments + [(
+            ["--policies"], dict(
+                nargs='*',
+                action="store",
+                help="List of all policy ARNs to scan for(default: LogicworksAllClients)"
+            )
+        )]
+
+    @expose(hide=True)
+    def default(self):
+        self.run(**vars(self.app.pargs))
+
+    def run(self, **kwargs):
+        self.app.log.info("Retrieving snapshots from AWS store")
+        policies = self.app.pargs.policies
+
+        response = list_wo_policy(policies)
+
+        self.app.render(response)
+
 __ALL__ = [
     CLI,
     AgedSnapshots,
+    IamCheck,
     MFAStatus,
     PrivateSubnetsController,
 ]

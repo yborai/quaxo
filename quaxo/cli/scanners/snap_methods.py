@@ -3,16 +3,7 @@ import datetime
 import pytz
 import boto3
 
-def get_stale_date(days):
-    today = datetime.datetime.now(pytz.UTC)
-
-    #checks to see if days should be set to default
-    if days is None:
-        num_days = 30
-    else:
-        num_days = days
-
-    return(today - datetime.timedelta(days=num_days))
+from .utils import get_stale_date
 
 def get_snaps(days):
     client = boto3.client('ec2')

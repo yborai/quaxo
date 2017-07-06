@@ -2,7 +2,7 @@ from cement.utils import test
 from moto import mock_iam
 import boto3
 
-from ...cli.scanners.list_no_mfa import generate_report, get_users
+from ...cli.scanners.utils import get_users
 from .base import QuaxoRunner
 
 
