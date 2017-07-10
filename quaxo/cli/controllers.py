@@ -8,6 +8,7 @@ from .scanners.list_no_mfa import list_no_mfa
 from .scanners.iam_check import list_wo_policy
 from .scanners.private_subnets import PrivateSubnets
 from .scanners.snap_methods import get_snaps
+from .scanners.list_mp_uploads import list_mp_uploads
 
 
 class CLI(CementBaseController):
@@ -129,10 +130,39 @@ class IamCheck(CLI):
 
         self.app.render(response)
 
+class S3Prune(CLI):
+    class Meta:
+        label = "s3-prune"
+        description = ("Returns all s3 multipart uploads older than a " 
+           "specified #days(default: 30)"
+        )
+        stacked_on = "base"
+        stacked_type = "nested"
+        arguments = CLI.Meta.arguments + [(
+            ["--days"], dict(
+                type=int,
+                action="store",
+                help="The number of days after which an upload is considered expired"
+            )
+        )]
+
+    @expose(hide=True)
+    def default(self):
+        self.run(**vars(self.app.pargs))
+
+    def run(self, **kwargs):
+        self.app.log.info("Retrieving Uploads from AWS store")
+        days = self.app.pargs.days
+
+        stale_mp_uploads = list_mp_uploads(days)
+
+        self.app.render(stale_mp_uploads)
+
 __ALL__ = [
     CLI,
     AgedSnapshots,
     IamCheck,
     MFAStatus,
     PrivateSubnetsController,
+    S3Prune,
 ]

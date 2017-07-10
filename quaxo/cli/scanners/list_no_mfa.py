@@ -34,14 +34,14 @@ def list_no_mfa():
     generate_report(iam)
 
     # Creates file-like csv 
-    iamcr = io.BytesIO(iam.get_credential_report()["Content"])  
+    iamcr = io.BytesIO(iam.get_credential_report()["Content"])
 
     # pandas used to make list from binary csv
     cf = pd.read_csv(iamcr)
     cf.to_sql("MFATable", conn, if_exists="replace")
     query = """SELECT user, mfa_active FROM MFATable WHERE mfa_active = 0;"""
     query_info = pd.read_sql(query, conn)
-    
+
     # All necessary user info put into a list of dicts
     response = [
         {
