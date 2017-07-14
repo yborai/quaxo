@@ -10,9 +10,8 @@ def get_stale_uploads(uploads, days):
     #initializes datetime object with offset awareness
     stale_check = get_stale_date(days)
 
-    if not uploads:
-        stale_uploads = "No uploads to report on"
-    else:
+    stale_uploads = "No uploads to report on"
+    if uploads:
         stale_uploads = [
             {
                 'UploadId' : upload['UploadId'],

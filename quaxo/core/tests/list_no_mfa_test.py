@@ -1,5 +1,4 @@
 from cement.utils import test
-from moto import mock_iam
 import boto3
 
 from ...cli.scanners.utils import get_users

@@ -10,6 +10,3 @@ class TestQuaxo(test.CementTestCase):
         QuaxoRunner.assert_quaxo_success(self, [
             "iam-check", "--help"
         ])
-
-    def test_iam_default(self):
-        assert not(list_wo_policy(None) == None)

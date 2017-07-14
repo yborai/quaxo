@@ -9,6 +9,7 @@ from .scanners.iam_check import list_wo_policy
 from .scanners.private_subnets import PrivateSubnets
 from .scanners.snap_methods import get_snaps
 from .scanners.list_mp_uploads import list_mp_uploads
+from .scanners.get_parameters import get_parameters
 
 
 class CLI(CementBaseController):
@@ -158,6 +159,44 @@ class S3Prune(CLI):
 
         self.app.render(stale_mp_uploads)
 
+class PullParameters(CLI):
+    class Meta:
+        label = "describe-parameter"
+        stacked_on = "base"
+        stacked_type = "nested"
+        description = "Gives list of parameters with information based on filter"
+        arguments = CLI.Meta.arguments + [(
+            ["-fk", "--fkey"], dict(
+                required=True,
+                action='store',
+                help='The name of the filter(Name, KeyId, Type)'
+            )
+        ),
+        (
+            ["-fv", "--fvalue"], dict(
+                required=True,
+                nargs='+',
+                action='store',
+                help='List of filter values'
+            )
+        )]
+
+    @expose(hide=True)
+    def default(self):
+        self.run(**vars(self.app.pargs))
+
+    def run(self, **kwargs):
+        filters = [
+            {
+                'Key' : self.app.pargs.fkey,
+                'Values' : self.app.pargs.fvalue
+            }
+        ]
+        response = get_parameters(filters)
+
+        self.app.render(response)
+
+
 __ALL__ = [
     CLI,
     AgedSnapshots,
@@ -165,4 +204,6 @@ __ALL__ = [
     MFAStatus,
     PrivateSubnetsController,
     S3Prune,
+    PullParameters
 ]
+

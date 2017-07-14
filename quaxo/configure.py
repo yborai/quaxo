@@ -11,5 +11,5 @@ CRED_ITEMS = [
     ),
 ]
 DEFAULTS = {
-    "STUB_PREFIX": os.path.expanduser("~/.quaxo/"),
+    "QUAXO_PREFIX": os.path.expanduser("~/.quaxo/"),
 }
