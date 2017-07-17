@@ -28,19 +28,19 @@ class OutputHandler(output.CementOutputHandler):
 
 class DefaultOutputHandler(OutputHandler):
     class Meta:
-        label = 'default'
+        label = 'plain'
 
     def render(self, data, *args, **kwargs):
         return data
 
 class JSONOutputHandler(OutputHandler):
     class Meta:
-        label = 'json'
+        label = 'default'
 
     def render(self, data, *args, **kwargs):
         del(kwargs["template"])
         return json.dumps(data, *args, cls=QuaxoJsonEncoder, **kwargs)
 
 def load(app):
-    handler.register(DefaultOutputHandler)
+    #handler.register(DefaultOutputHandler)
     handler.register(JSONOutputHandler)

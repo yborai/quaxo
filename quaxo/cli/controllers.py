@@ -10,6 +10,7 @@ from .scanners.private_subnets import PrivateSubnets
 from .scanners.snap_methods import get_snaps
 from .scanners.list_mp_uploads import list_mp_uploads
 from .scanners.get_parameters import get_parameters
+from .scanners.cw_retentions import get_overrides
 
 
 class CLI(CementBaseController):
@@ -196,14 +197,44 @@ class PullParameters(CLI):
 
         self.app.render(response)
 
+class CWRetention(CLI):
+    class Meta:
+        label = "list-overrides"
+        description = ("Returns all cloudwatch log groups "
+           "without default retention policies."
+        )
+        stacked_on = "base"
+        stacked_type = "nested"
+        arguments = CLI.Meta.arguments + [(
+            ["--days"], dict(
+                type=int,
+                action="store",
+                help=("The specified default retention period in days"
+                    "(1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, "
+                    "365, 400, 545, 731, 1827, and 3653)"
+                )
+            )
+        )]
+
+    @expose(hide=True)
+    def default(self):
+        self.run(**vars(self.app.pargs))
+
+    def run(self, **kwargs):
+        days = self.app.pargs.days
+
+        log_groups = get_overrides(days)
+
+        self.app.render(log_groups)
+
 
 __ALL__ = [
     CLI,
     AgedSnapshots,
+    CWRetention,
     IamCheck,
     MFAStatus,
     PrivateSubnetsController,
+    PullParameters,
     S3Prune,
-    PullParameters
 ]
-

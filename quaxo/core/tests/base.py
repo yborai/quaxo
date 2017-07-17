@@ -1,6 +1,6 @@
 from cement.utils import test
 
-from ...__main__ import Stub as Quaxo
+from ...__main__ import Quaxo
 
 
 class QuaxoRunner(Quaxo):

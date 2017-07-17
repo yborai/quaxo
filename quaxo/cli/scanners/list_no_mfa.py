@@ -20,7 +20,7 @@ def generate_report(iam):
             return True
 
 
-def list_no_mfa():    
+def list_no_mfa():
     iam = boto3.client('iam')
     conn = sqlite3.connect(":memory:")
 

@@ -8,23 +8,23 @@ from cement.core.foundation import CementApp
 from cement.utils.misc import init_defaults
 
 from .configure import CONFIG_PATH, CRED_ITEMS, DEFAULTS
-from .cli.controllers import __ALL__ as StubControllers
+from .cli.controllers import __ALL__ as QuaxoControllers
 
 sections = tuple(zip(*CRED_ITEMS))[0] + ("log.logging",)
 defaults = init_defaults(*sections)
 defaults["log.logging"]["level"] = os.environ.get("ZEPHYR_DEBUG_LEVEL", "INFO")
 defaults["log.colorlog"] = defaults["log.logging"]
 
-class StubException(Exception):
+class QuaxoException(Exception):
     pass
 
-class Stub(CementApp):
+class Quaxo(CementApp):
     class Meta:
         label = "quaxo"
         base_controller = "base"
         config_defaults = defaults
         config_files = [CONFIG_PATH]
-        handlers = StubControllers
+        handlers = QuaxoControllers
         extensions = [
             "quaxo.output",
             "colorlog",
@@ -41,11 +41,11 @@ class Stub(CementApp):
 
 
 def main():
-    with Stub() as app:
+    with Quaxo() as app:
         app.configure()
         try:
             app.run()
-        except StubException as e:
+        except QuaxoException as e:
             message = e.args[0]
             app.log.error(message)
             sys.exit(1)
